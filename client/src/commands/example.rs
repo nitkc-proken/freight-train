@@ -1,6 +1,4 @@
-use clap::Parser;
-
-#[derive(Parser, Debug)]
+#[derive(clap::Parser, Debug)]
 pub struct Example {
     #[arg(short, long)]
     name: String,

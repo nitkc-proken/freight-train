@@ -1,10 +1,9 @@
 mod example;
 
-use clap::Parser;
 use example::Example;
 
-/// Freight Client
-#[derive(Parser, Debug)]
+/// Freight CLI Client
+#[derive(clap::Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
     #[command(subcommand)]
