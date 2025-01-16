@@ -2,6 +2,10 @@
 name = "client"
 version = "0.1.0"
 edition = "2021"
-
+[[bin]]
+name = "fr8"
+path = "src/main.rs"
 [dependencies]
+clap = { version = "4.5.26", features = ["derive"] }
 common = { path = "../common" }
+tokio = { version = "1.43.0", features = ["full"] }

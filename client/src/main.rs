@@ -1,3 +1,9 @@
-fn main() {
-    println!("Hello, world!{:?}", common::add(1, 2));
+use clap::Parser;
+use commands::Args;
+
+mod commands;
+#[tokio::main]
+async fn main() {
+    let args = Args::parse();
+    args.run().await;
 }
