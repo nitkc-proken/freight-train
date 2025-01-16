@@ -17,7 +17,7 @@ pub enum Commands {
 }
 
 impl Args {
-    async fn run(&self) {
+    pub async fn run(&self) {
         match &self.command {
             Commands::Example(example) => example.run().await,
         }
