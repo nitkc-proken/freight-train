@@ -4,7 +4,7 @@ use serde_derive::{Serialize, Deserialize};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub(crate) struct Config {
-    servers: HashMap<String, String>,
+    servers: HashMap<String, url::Url>,
     token: Option<String>
 }
 
