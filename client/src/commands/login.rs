@@ -21,7 +21,7 @@ async fn login(user: String, password: String) -> bool {
     let login_request = LoginRequestBody { user, password };
     let login_request_json = serde_json::to_string(&login_request).unwrap();
     println!("{}", login_request_json);
-    true
+    true // ログインステータスを返す。 現在は便宜上trueを返す
 }
 
 #[derive(Debug, Serialize)]
