@@ -1,18 +1,21 @@
 use super::{Args, Command};
-use proconio::input;
 use serde::Serialize;
 use serde_json;
-use std::io::{self, Write};
+use dialoguer::{Input, Password};
 
 #[derive(clap::Parser, Debug)]
 pub struct Login {}
 
 impl Command for Login {
     async fn run(&self, _args: &Args) {
-        print!("username: ");
-        io::stdout().flush().unwrap();
-        input! {username: String};
-        let password = rpassword::prompt_password("password: ").unwrap();
+        let username = Input::new()
+            .with_prompt("username")
+            .interact()
+            .unwrap();
+        let password = Password::new()
+            .with_prompt("password")
+            .interact()
+            .unwrap();
         login(username, password).await;
     }
 }
