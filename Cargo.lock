@@ -153,6 +153,8 @@ dependencies = [
  "clap",
  "common",
  "confy",
+ "serde",
+ "serde_derive",
  "tokio",
  "url",
 ]
