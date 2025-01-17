@@ -18,7 +18,11 @@ pub enum Commands {
 impl Args {
     pub async fn run(&self) {
         match &self.command {
-            Commands::Example(example) => example.run().await,
+            Commands::Example(example) => example.run(self).await,
         }
     }
+}
+
+pub trait Command {
+    async fn run(&self, args: &Args);
 }
