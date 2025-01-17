@@ -9,7 +9,9 @@ path = "src/main.rs"
 clap = { version = "4.5.26", features = ["derive"] }
 common = { path = "../common" }
 confy = "0.6.1"
-serde = "1.0.217"
-serde_derive = "1.0.217"
+dialoguer = "0.11.0"
+rpassword = "7.3.1"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.135"
 tokio = { version = "1.43.0", features = ["full"] }
 url = { version = "2.5.4", features = ["serde"] }
