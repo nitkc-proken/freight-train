@@ -10,7 +10,7 @@ pub(crate) struct Config {
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub(crate) struct DefaultConfig {
-    pub(crate) server: String,
+    pub(crate) server: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
