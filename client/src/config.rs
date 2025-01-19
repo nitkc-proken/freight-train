@@ -16,7 +16,7 @@ pub(crate) struct DefaultConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct ServerConfig {
     pub(crate) url: url::Url,
-    pub(crate) token: String,
+    pub(crate) token: Option<String>,
 }
 
 impl Config {
