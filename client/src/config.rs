@@ -1,19 +1,32 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, process::exit};
 
 use serde::{Serialize, Deserialize};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub(crate) struct Config {
-    servers: HashMap<String, url::Url>,
-    token: Option<String>
+    pub(crate) default: DefaultConfig,
+    pub(crate) servers: HashMap<String, ServerConfig>,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub(crate) struct DefaultConfig {
+    pub(crate) server: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub(crate) struct ServerConfig {
+    pub(crate) url: url::Url,
+    pub(crate) token: String,
 }
 
 impl Config {
     pub(crate) fn load() -> Self {
-        confy::load("freight-train", "config").unwrap()
+        confy::load("freight-train", "config").unwrap_or_else(|error| {
+            eprintln!("{:?}", error);
+            exit(1);
+        })
     }
 
-    #[allow(dead_code)] // 使用時はこのアノテーションを取り除くこと
     pub(crate) fn store(&self) {
         confy::store("freight-train", "config", self).unwrap_or_else(|error| eprintln!("{error}"))
     }
