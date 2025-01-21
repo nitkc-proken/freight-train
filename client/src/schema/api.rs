@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -27,4 +28,11 @@ pub struct LoginResponseToken {
     pub token: String,
     #[serde(rename = "expiresAt")]
     pub expires_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LogoutResponse {
+    pub ok: bool,
+    pub data: Option<String>, // Always returned null or empty
+    pub message: Option<String>,
 }
