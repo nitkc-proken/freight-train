@@ -1,6 +1,6 @@
 use std::{collections::HashMap, process::exit};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub(crate) struct Config {

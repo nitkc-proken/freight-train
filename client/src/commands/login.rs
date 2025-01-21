@@ -1,9 +1,9 @@
-use crate::config::{Config, ServerConfig};
-use crate::schema::api::{LoginRequest, LoginResponse};
-use crate::request::Post;
-use std::process::exit;
 use super::{Args, Command};
-use dialoguer::{Input, Password, Confirm};
+use crate::config::{Config, ServerConfig};
+use crate::request::Post;
+use crate::schema::api::{LoginRequest, LoginResponse};
+use dialoguer::{Confirm, Input, Password};
+use std::process::exit;
 use url::Url;
 
 #[derive(clap::Parser, Debug)]
@@ -23,8 +23,8 @@ impl Command for Login {
             exit(1);
         }
         if config.servers.contains_key(&self.server_name.clone()) {
-            println!("Server {} already has an active login.", self.server_name);
             let answer = _args.yn().unwrap_or_else(|| -> bool {
+                println!("Server {} already has an active login.", self.server_name);
                 Confirm::new()
                     .with_prompt("Do you want to update the cerdentials?")
                     .default(false)
@@ -35,10 +35,13 @@ impl Command for Login {
                 return;
             }
         }
-        if config.default.server != None {
-            println!("Server {} already set as default.", config.default.server.unwrap());
+        if config.default.server != None && self.default {
             let answer = _args.yn().unwrap_or_else(|| -> bool {
-                    Confirm::new()
+                println!(
+                    "Server {} already set as default.",
+                    config.default.server.unwrap()
+                );
+                Confirm::new()
                     .with_prompt("Do yo want to update the default server?")
                     .default(true)
                     .interact()
@@ -51,21 +54,15 @@ impl Command for Login {
         url.set_path(url.path().to_string().trim_end_matches('/'));
         url.set_fragment(None);
         url.set_query(None);
-        let username = Input::new()
-            .with_prompt("username")
-            .interact()
-            .unwrap();
-        let password = Password::new()
-            .with_prompt("password")
-            .interact()
-            .unwrap();
+        let username = Input::new().with_prompt("username").interact().unwrap();
+        let password = Password::new().with_prompt("password").interact().unwrap();
         let response_body = login(username, password, url.clone()).await;
         let mut config = Config::load();
-        let server = ServerConfig{
+        let server = ServerConfig {
             url,
             token: Some(response_body.data.unwrap().token.token),
         };
-        config.servers.insert(self.server_name.clone(),server);
+        config.servers.insert(self.server_name.clone(), server);
         if self.default {
             config.default.server = Some(self.server_name.clone());
         }
@@ -76,12 +73,15 @@ impl Command for Login {
 
 async fn login(username: String, password: String, mut url: Url) -> LoginResponse {
     let login_request = LoginRequest { username, password };
-    url.set_path(&format!("{}/api/auth/login", url.path().trim_end_matches('/')));
+    url.set_path(&format!(
+        "{}/api/auth/login",
+        url.path().trim_end_matches('/')
+    ));
     let response = Post::new(url, &login_request).send().await;
     match response {
         Ok(response) => {
             let status = response.status();
-            if !status.is_success() && status.as_u16() != 401  {
+            if !status.is_success() && status.as_u16() != 401 {
                 eprintln!("Request error: status {}", status.as_u16());
                 eprintln!("Please check your internet connection or server URL and try again.")
             }
@@ -98,7 +98,7 @@ async fn login(username: String, password: String, mut url: Url) -> LoginRespons
                     }
                 }
                 Err(e) => {
-                    eprintln!("Invalid response: {}",e);
+                    eprintln!("Invalid response: {}", e);
                     exit(1);
                 }
             }

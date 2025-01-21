@@ -1,4 +1,4 @@
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -18,7 +18,7 @@ pub struct LoginResponse {
 pub struct LoginResponseData {
     #[serde(rename = "userId")]
     pub user_id: Uuid,
-    pub username: String, 
+    pub username: String,
     pub token: LoginResponseToken,
 }
 
