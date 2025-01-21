@@ -1,17 +1,14 @@
 mod example;
 mod login;
-mod server;
 
 use example::Example;
 use login::Login;
-use server::Server;
 
 /// Freight CLI Client
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
     Example(Example),
     Login(Login),
-    Server(Server),
 }
 
 #[derive(clap::Parser, Debug)]
@@ -30,7 +27,6 @@ impl Args {
         match &self.command {
             Commands::Example(example) => example.run(self).await,
             Commands::Login(login) => login.run(self).await,
-            Commands::Server(server) => server.run(self).await,
         }
     }
 }
@@ -40,7 +36,7 @@ impl Args {
         match (self.yes, self.no) {
             (_, true) => Some(false),
             (true, _) => Some(true),
-            _ => None
+            _ => None,
         }
     }
 }
