@@ -19,6 +19,10 @@ pub enum Commands {
 pub struct Args {
     #[command(subcommand)]
     command: Commands,
+    #[arg(short, long, global = true)]
+    yes: bool,
+    #[arg(short, long, global = true)]
+    no: bool,
 }
 
 impl Args {
@@ -27,6 +31,16 @@ impl Args {
             Commands::Example(example) => example.run(self).await,
             Commands::Login(login) => login.run(self).await,
             Commands::Server(server) => server.run(self).await,
+        }
+    }
+}
+
+impl Args {
+    fn yn(&self) -> Option<bool> {
+        match (self.yes, self.no) {
+            (_, true) => Some(false),
+            (true, _) => Some(true),
+            _ => None
         }
     }
 }

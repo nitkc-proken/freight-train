@@ -19,7 +19,6 @@ pub struct Server {
 
 impl Command for Server {
     async fn run(&self, _args: &Args) {
-        println!("{:?}", self);
         match &self.command {
             ServerCommands::Set(set) => set.run(_args).await,
             ServerCommands::Remove(remove) => remove.run(_args).await,
