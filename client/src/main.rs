@@ -4,6 +4,8 @@ use config::Config;
 
 mod commands;
 mod config;
+mod request;
+mod schema;
 
 #[tokio::main]
 async fn main() {
