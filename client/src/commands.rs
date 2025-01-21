@@ -29,9 +29,6 @@ impl Args {
             Commands::Login(login) => login.run(self).await,
         }
     }
-}
-
-impl Args {
     fn yn(&self) -> Option<bool> {
         match (self.yes, self.no) {
             (_, true) => Some(false),
