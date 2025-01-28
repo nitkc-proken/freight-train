@@ -1,14 +1,17 @@
 mod example;
 mod login;
+mod logout;
 
 use example::Example;
 use login::Login;
+use logout::Logout;
 
 /// Freight CLI Client
 #[derive(clap::Subcommand, Debug)]
 pub enum Commands {
     Example(Example),
     Login(Login),
+    Logout(Logout),
 }
 
 #[derive(clap::Parser, Debug)]
@@ -27,6 +30,7 @@ impl Args {
         match &self.command {
             Commands::Example(example) => example.run(self).await,
             Commands::Login(login) => login.run(self).await,
+            Commands::Logout(logout) => logout.run(self).await,
         }
     }
     fn yn(&self) -> Option<bool> {

@@ -1,8 +1,8 @@
 use super::{Args, Command};
 use crate::config::{Config, ServerConfig};
-use crate::request::Post;
 use crate::schema::api::{LoginRequest, LoginResponse};
 use dialoguer::{Confirm, Input, Password};
+use reqwest::Client;
 use std::process::exit;
 use url::Url;
 
@@ -77,13 +77,14 @@ async fn login(username: String, password: String, mut url: Url) -> LoginRespons
         "{}/api/auth/login",
         url.path().trim_end_matches('/')
     ));
-    let response = Post::new(url, &login_request).send().await;
+    let response = Client::new().post(url).json(&login_request).send().await;
     match response {
         Ok(response) => {
             let status = response.status();
             if !status.is_success() && status.as_u16() != 401 {
                 eprintln!("Request error: status {}", status.as_u16());
-                eprintln!("Please check your internet connection or server URL and try again.")
+                eprintln!("Please check your internet connection or server URL and try again.");
+                exit(1);
             }
             let response_body = response.json::<LoginResponse>().await;
             match response_body {
