@@ -5,7 +5,21 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../common" }
+tokio = { version = "1.43.0", features = ["full"] }
+tokio-util = {version = "0.7.13", features = ["io-util"]}
+tokio-stream = "0.1.17"
+
 tonic = "0.12.3"
+tonic-reflection = "0.12.3"
 prost = "0.13"
+
+packet = { version = "0.1.4" }
+async-trait = "0.1.84"
+
+quinn = "0.11"
+rustls = { version = "0.23.20",default-features = false,features = ["logging","std",] }
+rcgen = "0.13.2"
+netns-rs = "0.1.0"
+futures = "0.3.31"
 [build-dependencies]
 tonic-build = "0.12.3"

@@ -1,0 +1,3 @@
+[submodule "server/proto"]
+	path = server/proto
+	url = https://github.com/nitkc-proken/freight-grpc-protocols.git
