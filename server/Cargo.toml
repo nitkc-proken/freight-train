@@ -20,6 +20,11 @@ quinn = "0.11"
 rustls = { version = "0.23.20",default-features = false,features = ["logging","std",] }
 rcgen = "0.13.2"
 netns-rs = "0.1.0"
+rtnetlink = "0.14.1"
+netlink-packet-route = "0.19.0"
 futures = "0.3.31"
+
+ulid = "1.1.4"
+
 [build-dependencies]
 tonic-build = "0.12.3"

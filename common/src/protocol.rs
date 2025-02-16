@@ -15,9 +15,38 @@ struct Capsule {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Frame {
-    Hello,
+    Ping,
+    OK,
+    Request(
+        RequestBody
+    ),
+    Response(
+        ResponseBody
+    ),
     #[serde(with = "serde_bytes")]
     IPv4(Vec<u8>),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum RequestBody {
+    AuthRequest {
+        token:String,
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum ResponseBody{
+
+}
+
+
+pub enum SessionState{
+    Init,
+    Authenticated,
+    RequestingIPAddress,
+    Ready,
+    Established,
+    Closed,
 }
 
 pub struct TunnelCodec;

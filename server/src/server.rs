@@ -5,7 +5,7 @@ use ulid::Ulid;
 
 #[async_trait::async_trait]
 pub trait Server: Send + Sync {
-    async fn start(&self, session_handler: AsyncSessionHandler) -> io::Result<()>;
+    async fn start(&self) -> io::Result<()>;
 }
 
 /// コネクションを扱うためのセッション情報
@@ -29,7 +29,7 @@ impl AppSession {
     }
 }
 
-/// 非同期セッションハンドラの型。返す Future も `Send + 'static` にする。
-/// これにより、別スレッドへタスクを渡す (`tokio::spawn` 等) 場合でもコンパイラが許容してくれます。
-pub type AsyncSessionHandler =
-    fn(session: AppSession) -> Pin<Box<dyn Future<Output = io::Result<()>> + Send>>;
+#[async_trait::async_trait]
+pub trait SessionHandler:Send + Sync {
+    async fn handle_session(&self, session: AppSession) -> io::Result<()>;
+}

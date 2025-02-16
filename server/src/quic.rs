@@ -1,4 +1,4 @@
-use crate::server::Server;
+use crate::server::{Server, SessionHandler};
 use quinn::{crypto::Session, Endpoint, ServerConfig};
 use rustls::pki_types::{CertificateDer, PrivatePkcs8KeyDer};
 use std::io;
@@ -6,39 +6,41 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::{error::Error, time::Duration};
 
-use super::server::{AppSession, AsyncSessionHandler};
+use super::server::AppSession;
 
 pub struct QuicServer {
     address: String,
+    session_handler: Arc<Box<dyn SessionHandler + Sync>>,
 }
 
 impl QuicServer {
-    pub fn new(address: &str) -> Self {
+    pub fn new(address: &str, session_handler: Box<dyn SessionHandler + Sync>) -> Self {
         Self {
             address: address.to_string(),
+            session_handler: Arc::new(session_handler),
         }
     }
 }
 
 #[async_trait::async_trait]
 impl Server for QuicServer {
-    async fn start(&self, session_handler: AsyncSessionHandler) -> io::Result<()> {
+    async fn start(&self) -> io::Result<()> {
         let (endpoint, _server_cert) = make_server_endpoint(self.address.parse().unwrap()).unwrap();
         println!("QUIC server listening on {}", self.address);
 
         while let Some(conn) = endpoint.accept().await {
             let new_connection = conn.await?;
             println!("New QUIC connection: {:?}", new_connection.remote_address());
-
+            let handler = self.session_handler.clone();
             tokio::spawn(async move {
                 let (send, recv) = new_connection
                     .accept_bi()
                     .await
                     .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
-                if let Err(e) =
-                    session_handler(AppSession::new(Box::new(recv), Box::new(send))).await
-                {
-                    eprintln!("Connection failed: {}", e);
+
+                let err = handler.handle_session(AppSession::new(Box::new(recv), Box::new(send))).await;
+                if let Err(e) = err {
+                    eprintln!("Error handling session: {}", e);
                 }
                 Ok::<_, io::Error>(())
             });
