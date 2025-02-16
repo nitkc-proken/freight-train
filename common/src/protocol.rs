@@ -1,10 +1,13 @@
 use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
+use std::error::Error;
 use std::io::{Read, Write};
 use std::net::{IpAddr, SocketAddr};
+use tokio::io::AsyncRead;
 use tokio::net::UdpSocket;
+use tokio_stream::StreamExt;
 use tokio_util::bytes::{BufMut, BytesMut};
-use tokio_util::codec::{Decoder, Encoder};
+use tokio_util::codec::{Decoder, Encoder, FramedRead};
 use tun::{Reader, Writer};
 
 #[derive(Serialize, Deserialize)]
@@ -13,7 +16,7 @@ struct Capsule {
     data: Vec<u8>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum Frame {
     Ping,
     OK,
@@ -24,13 +27,18 @@ pub enum Frame {
     IPv4(Vec<u8>),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum RequestBody {
     AuthRequest { token: String },
+    ClientIPRequest { network_id: String },
+    ReadyRequest,
+    CloseRequest,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub enum ResponseBody {}
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub enum ResponseBody {
+    ClientIPResponse { ip: IpAddr },
+}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum SessionState {
@@ -41,6 +49,20 @@ pub enum SessionState {
     Established,
     Closed,
 }
+type AppFramedRead = FramedRead<Box<dyn AsyncRead + Send + Unpin>, TunnelCodec>;
+pub async fn expect_frame(
+    mut framed_read: AppFramedRead,
+    expected: fn(Frame) -> Option<Frame>,
+) -> Result<Frame, String> {
+    let result = framed_read
+        .next()
+        .await
+        .ok_or("Error while reading frame")?.map_err(|e| e.to_string())?;
+    let result = expected(result).ok_or("Unexpected frame")?;
+
+    Ok(result)
+}
+
 
 pub struct TunnelCodec;
 
