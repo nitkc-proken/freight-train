@@ -17,30 +17,23 @@ struct Capsule {
 pub enum Frame {
     Ping,
     OK,
-    Request(
-        RequestBody
-    ),
-    Response(
-        ResponseBody
-    ),
+    StateChanged(SessionState),
+    Request(RequestBody),
+    Response(ResponseBody),
     #[serde(with = "serde_bytes")]
     IPv4(Vec<u8>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum RequestBody {
-    AuthRequest {
-        token:String,
-    },
+    AuthRequest { token: String },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub enum ResponseBody{
+pub enum ResponseBody {}
 
-}
-
-
-pub enum SessionState{
+#[derive(Serialize, Deserialize, Debug)]
+pub enum SessionState {
     Init,
     Authenticated,
     RequestingIPAddress,
