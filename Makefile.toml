@@ -7,9 +7,15 @@ command = "curl"
 args = ["-o", "schema.yaml", "${BACKEND_REST_HOST}/api/schema.yaml"]
 [tasks.openapi-gen]
 command = "docker"
+linux.env = { "UID" = { script = [
+    "id -u",
+] }, "GID" = { script = [
+    "id -g",
+] }, "OPTS" = "--user=${UID}:${GID}" }
 args = [
     "run",
     "--rm",
+    "${OPTS}",
     "-v",
     "${PWD}:/local",
     "openapitools/openapi-generator-cli",
