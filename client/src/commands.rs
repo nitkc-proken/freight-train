@@ -1,6 +1,7 @@
 mod example;
 mod login;
 mod logout;
+mod tunnel;
 
 use example::Example;
 use login::Login;
@@ -12,6 +13,7 @@ pub enum Commands {
     Example(Example),
     Login(Login),
     Logout(Logout),
+    Tunnel(tunnel::Tunnel),
 }
 
 #[derive(clap::Parser, Debug)]
@@ -31,6 +33,7 @@ impl Args {
             Commands::Example(example) => example.run(self).await,
             Commands::Login(login) => login.run(self).await,
             Commands::Logout(logout) => logout.run(self).await,
+            Commands::Tunnel(tunnel) => tunnel.run(self).await,
         }
     }
     fn yn(&self) -> Option<bool> {
