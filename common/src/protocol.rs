@@ -32,7 +32,7 @@ pub enum RequestBody {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ResponseBody {}
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub enum SessionState {
     Init,
     Authenticated,
