@@ -1,0 +1,32 @@
+env_files = [".env.dev", ".env"]
+[config]
+default_to_workspace = false
+
+[tasks.openapi-fetch]
+command = "curl"
+args = ["-o", "schema.yaml", "${BACKEND_REST_HOST}/api/schema.yaml"]
+[tasks.openapi-gen]
+command = "docker"
+linux.env = { "UID" = { script = [
+    "id -u",
+] }, "GID" = { script = [
+    "id -g",
+] }, "OPTS" = "--user=${UID}:${GID}" }
+args = [
+    "run",
+    "--rm",
+    "${OPTS}",
+    "-v",
+    "${PWD}:/local",
+    "openapitools/openapi-generator-cli",
+    "generate",
+    "-i",
+    "/local/schema.yaml",
+    "-g",
+    "rust",
+    "-o",
+    "/local/backend_api",
+    "--skip-validate-spec",
+]
+[tasks.openapi]
+dependencies = ["openapi-fetch", "openapi-gen"]

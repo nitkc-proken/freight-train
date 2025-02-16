@@ -4,4 +4,5 @@ members = [
     "common",
     "server",
     "client",
+    "backend_api",
 ]

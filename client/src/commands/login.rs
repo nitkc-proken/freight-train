@@ -1,9 +1,11 @@
 use super::{Args, Command};
-use crate::config::{Config, ServerConfig};
-use crate::schema::api::{LoginRequest, LoginResponse};
+use crate::{
+    api_client::get_api_config,
+    config::{Config, ServerConfig},
+};
 use dialoguer::{Confirm, Input, Password};
 use reqwest::Client;
-use std::process::exit;
+use std::{ops::Deref, process::exit};
 use url::Url;
 
 #[derive(clap::Parser, Debug)]
@@ -60,7 +62,7 @@ impl Command for Login {
         let mut config = Config::load();
         let server = ServerConfig {
             url,
-            token: Some(response_body.data.unwrap().token.token),
+            token: Some(response_body.token.token),
         };
         config.servers.insert(self.server_name.clone(), server);
         if self.default {
@@ -71,42 +73,35 @@ impl Command for Login {
     }
 }
 
-async fn login(username: String, password: String, mut url: Url) -> LoginResponse {
-    let login_request = LoginRequest { username, password };
-    url.set_path(&format!(
-        "{}/api/auth/login",
-        url.path().trim_end_matches('/')
-    ));
-    let response = Client::new().post(url).json(&login_request).send().await;
+async fn login(username: String, password: String, url: Url) -> openapi::models::UserWithTokenResponse{
+    let login_credential = openapi::models::LoginCredential { username, password };
+    let conf = get_api_config(url.as_str().to_string());
+
+    let response =
+        openapi::apis::default_api::api_auth_login_post(&conf, Some(login_credential)).await;
     match response {
-        Ok(response) => {
-            let status = response.status();
-            if !status.is_success() && status.as_u16() != 401 {
-                eprintln!("Request error: status {}", status.as_u16());
-                eprintln!("Please check your internet connection or server URL and try again.");
-                exit(1);
-            }
-            let response_body = response.json::<LoginResponse>().await;
-            match response_body {
-                Ok(response_body) => {
-                    if response_body.ok {
-                        response_body
-                    } else {
-                        eprintln!("Login Failed!");
-                        eprintln!("Wrong username or password.");
-                        eprintln!("Check your credentials.");
+        Ok(response) => *response.data,
+        Err(e) => match e {
+            openapi::apis::Error::ResponseError(response_content) => {
+                match response_content.entity {
+                    Some((e)) => match e {
+                        openapi::apis::default_api::ApiAuthLoginPostError::UnknownValue(_value) => {
+                            eprintln!("Login Failed!");
+                            eprintln!("Wrong username or password.");
+                            eprintln!("Check your credentials.");
+                            exit(1);
+                        }
+                    },
+                    None => {
+                        eprintln!("Invalid Response");
                         exit(1);
                     }
                 }
-                Err(e) => {
-                    eprintln!("Invalid response: {}", e);
-                    exit(1);
-                }
             }
-        }
-        Err(e) => {
-            eprintln!("Request error: {}", e);
-            exit(1);
-        }
+            e => {
+                eprintln!("Request error: {}", e);
+                exit(1);
+            }
+        },
     }
 }
