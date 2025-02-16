@@ -50,19 +50,19 @@ pub enum SessionState {
     Closed,
 }
 type AppFramedRead = FramedRead<Box<dyn AsyncRead + Send + Unpin>, TunnelCodec>;
-pub async fn expect_frame(
+pub async fn expect_frame<T>(
     mut framed_read: AppFramedRead,
-    expected: fn(Frame) -> Option<Frame>,
-) -> Result<Frame, String> {
+    expected: fn(Frame) -> Option<T>,
+) -> Result<T, String> {
     let result = framed_read
         .next()
         .await
-        .ok_or("Error while reading frame")?.map_err(|e| e.to_string())?;
+        .ok_or("Error while reading frame")?
+        .map_err(|e| e.to_string())?;
     let result = expected(result).ok_or("Unexpected frame")?;
 
     Ok(result)
 }
-
 
 pub struct TunnelCodec;
 
