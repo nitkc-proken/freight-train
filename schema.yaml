@@ -1,0 +1,471 @@
+openapi: 3.1.0
+info:
+  title: Freight API
+  description: Freight API
+  version: 1.0.0
+externalDocs:
+  url: /
+servers:
+- url: http://localhost:8080
+  description: Development Server
+tags: []
+paths:
+  /api/auth/login:
+    post:
+      tags: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  title: String
+                password:
+                  type: string
+                  title: String
+              required:
+              - password
+              - username
+              title: LoginCredential
+        required: false
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    $ref: "#/components/schemas/UserWithTokenResponse"
+                required:
+                - data
+                - ok
+                title: Success
+      deprecated: false
+  /api/auth/logout:
+    post:
+      tags: []
+      parameters: []
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    type: "null"
+                    title: Unit
+                required:
+                - ok
+                title: Success
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+  /api/networks/create:
+    post:
+      tags: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  title: String
+                networkAddress:
+                  type: string
+                  format: ipv4-cidr
+                  example: 10.0.0.0/8
+                  title: NetworkAddressWithMask
+                containerAddress:
+                  type: string
+                  format: ipv4-cidr
+                  example: 10.0.0.0/8
+                  title: NetworkAddressWithMask
+                clientAddress:
+                  type: string
+                  format: ipv4-cidr
+                  example: 10.0.0.0/8
+                  title: NetworkAddressWithMask
+              required:
+              - clientAddress
+              - containerAddress
+              - name
+              - networkAddress
+              title: CreateNetworkRequest
+        required: false
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    $ref: "#/components/schemas/UserWithTokenResponse"
+                required:
+                - data
+                - ok
+                title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "400":
+          description: Bad Request
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+  /api/networks/me:
+    get:
+      tags: []
+      parameters: []
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Network"
+                    title: ArrayList<Network>
+                required:
+                - data
+                - ok
+                title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+  /api/networks/{owner}/{name}:
+    get:
+      tags: []
+      parameters:
+      - name: owner
+        in: path
+        required: true
+        deprecated: false
+        explode: false
+        schema:
+          type: string
+          title: String
+      - name: name
+        in: path
+        required: true
+        deprecated: false
+        explode: false
+        schema:
+          type: string
+          title: String
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    $ref: "#/components/schemas/Network"
+                required:
+                - data
+                - ok
+                title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "404":
+          description: Not Found
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+  /api/users/me:
+    get:
+      tags: []
+      parameters: []
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    $ref: "#/components/schemas/UserResponse"
+                required:
+                - data
+                - ok
+                title: Success
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+components:
+  schemas:
+    UserWithTokenResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          title: Uuid
+        username:
+          type: string
+          title: String
+        token:
+          $ref: "#/components/schemas/Token"
+      required:
+      - token
+      - userId
+      - username
+      title: UserWithTokenResponse
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+          title: String
+        expiresAt:
+          type: string
+          format: timestamp
+          title: Instant
+      required:
+      - expiresAt
+      - token
+      title: Token
+    Network:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Uuid
+        numericId:
+          type: integer
+          maximum: 4294967295
+          minimum: 0
+          title: UInt
+        name:
+          type: string
+          title: String
+        networkAddressWithMask:
+          type: string
+          format: ipv4-cidr
+          example: 10.0.0.0/8
+          title: NetworkAddressWithMask
+        containersNetworkAddressWithMask:
+          type: string
+          format: ipv4-cidr
+          example: 10.0.0.0/8
+          title: NetworkAddressWithMask
+        clientsNetworkAddressWithMask:
+          type: string
+          format: ipv4-cidr
+          example: 10.0.0.0/8
+          title: NetworkAddressWithMask
+        owner:
+          $ref: "#/components/schemas/User"
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/NetworkMember"
+          title: ArrayList<NetworkMember>
+        dockerNetworkId:
+          type:
+          - "null"
+          - string
+          title: DockerId
+        tunInterfaceName:
+          type:
+          - "null"
+          - string
+          title: NetworkInterfaceName
+        vrfInterfaceName:
+          type:
+          - "null"
+          - string
+          title: NetworkInterfaceName
+        bridgeInterfaceName:
+          type:
+          - "null"
+          - string
+          title: NetworkInterfaceName
+      required:
+      - clientsNetworkAddressWithMask
+      - containersNetworkAddressWithMask
+      - id
+      - members
+      - name
+      - networkAddressWithMask
+      - numericId
+      - owner
+      title: Network
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Uuid
+        username:
+          type: string
+          title: String
+        passwordHash:
+          type: string
+          title: Argon2
+      required:
+      - id
+      - passwordHash
+      - username
+      title: User
+    NetworkMember:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        permission:
+          $ref: "#/components/schemas/Permissions"
+      required:
+      - permission
+      - user
+      title: NetworkMember
+    Permissions:
+      type: string
+      enum:
+      - Owner
+      - Member
+      - Guest
+      title: Permissions
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Uuid
+        username:
+          type: string
+          title: String
+      required:
+      - id
+      - username
+      title: UserResponse
+  examples: {}
+  securitySchemes:
+    AppDefaultSecurityScheme:
+      type: http
+      scheme: bearer
