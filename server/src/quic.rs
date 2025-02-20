@@ -1,5 +1,5 @@
 use crate::server::{Server, SessionHandler};
-use quinn::{crypto::Session, Endpoint, ServerConfig};
+use quinn::{Endpoint, ServerConfig};
 use rustls::pki_types::{CertificateDer, PrivatePkcs8KeyDer};
 use std::io;
 use std::net::SocketAddr;
@@ -32,13 +32,22 @@ impl Server for QuicServer {
             let new_connection = conn.await?;
             println!("New QUIC connection: {:?}", new_connection.remote_address());
             let handler = self.session_handler.clone();
-            tokio::spawn(async move {
-                let (send, recv) = new_connection
-                    .accept_bi()
-                    .await
-                    .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+            let (send, recv) = new_connection
+                .accept_bi()
+                .await
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
 
-                let err = handler.handle_session(AppSession::new(Box::new(recv), Box::new(send))).await;
+            let session = self
+                .session_handler
+                .add_session(AppSession::new())
+                .await
+                .unwrap();
+            tokio::spawn(async move {
+                let session_cloned = session.clone();
+                let err = handler
+                    .handle_session(
+                        Box::new(recv), Box::new(send), session_cloned.session_data.clone())
+                    .await;
                 if let Err(e) = err {
                     eprintln!("Error handling session: {}", e);
                 }

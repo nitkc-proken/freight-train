@@ -1,10 +1,9 @@
 use crate::server::{Server, SessionHandler};
 use std::io;
 use std::sync::Arc;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::TcpListener;
 
-use super::server::{AppSession};
+use super::server::AppSession;
 
 pub struct TcpServer {
     address: String,
@@ -30,12 +29,21 @@ impl Server for TcpServer {
             let (stream, addr) = listener.accept().await?;
             println!("New connection from {}", addr);
             // Handle each client in a separate task
-            
+
             let session_handler = self.session_handler.clone();
+            let session = self
+            .session_handler
+            .add_session(AppSession::new())
+            .await
+            .unwrap();
             tokio::spawn(async move {
+                let session_cloned = session.clone();
                 let (read, write) = stream.into_split();
-                let session = AppSession::new(Box::new(read), Box::new(write));
-                if let Err(e) = session_handler.handle_session(session).await {
+                
+                if let Err(e) = session_handler
+                    .handle_session(Box::new(read), Box::new(write), session_cloned.session_data.clone())
+                    .await
+                {
                     eprintln!("Failed to handle client: {}", e);
                 }
             });

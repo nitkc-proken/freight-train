@@ -1,11 +1,11 @@
-use std::net::{AddrParseError, Ipv4Addr};
+use std::{net::Ipv4Addr, sync::Arc};
 
 use futures::TryStreamExt;
 use netlink_packet_route::link::{InfoData, InfoKind, InfoVrf, LinkAttribute, LinkInfo};
 use tokio::runtime::Runtime;
 
 pub struct RtnetlinkWrapper {
-    rt: Runtime,
+    pub rt: Arc<Runtime>,
     handle: rtnetlink::Handle,
 }
 
@@ -15,16 +15,40 @@ impl RtnetlinkWrapper {
         let (connection, handle, _) = rtnetlink::new_connection().unwrap();
 
         rt.spawn(connection);
+        Self {
+            rt: Arc::new(rt),
+            handle,
+        }
+    }
+    pub fn child(&self) -> Self {
+        let (connection, handle, _) = rtnetlink::new_connection().unwrap();
+        let rt = self.rt.clone();
+        rt.spawn(connection);
         Self { rt, handle }
     }
+    pub async fn add_route(
+        &self,
+        destination: u32,
+        destination_length: u8,
+        gateway: u32,
+    ) -> Result<(), String> {
+        let request = self
+            .handle
+            .route()
+            .add()
+            .v4()
+            .destination_prefix(Ipv4Addr::from_bits(destination), destination_length)
+            .gateway(Ipv4Addr::from_bits(gateway));
 
+        request.execute().await.map_err(|e| e.to_string())
+    }
     pub async fn get_interface_index(&self, name: String) -> Result<u32, String> {
-        let mut links = self.handle.link().get().match_name(name).execute();
+        let mut links = self.handle.link().get().match_name(name.clone()).execute();
         let link = links.try_next();
         match link.await {
             Ok(Some(link)) => Ok(link.header.index),
             Ok(None) => Err("No link found on".to_string()),
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(format!("get_interface_index {}:{}", name.clone(), e)),
         }
     }
 
@@ -61,16 +85,44 @@ impl RtnetlinkWrapper {
         let request = self
             .handle
             .link()
-            .set(self.get_interface_index(interface).await.unwrap())
-            .controller(self.get_interface_index(master).await.unwrap());
+            .set(self.get_interface_index(interface).await?)
+            .controller(self.get_interface_index(master).await?);
         request.execute().await.map_err(|e| e.to_string())
     }
 
+    pub async fn delete_interface(&self, name: String) -> Result<(), String> {
+        let request = self
+            .handle
+            .link()
+            .del(self.get_interface_index(name).await?);
+        request.execute().await.map_err(|e| e.to_string())
+    }
+
+    pub async fn print_interfaces(&self) -> Result<(), String> {
+        let links = self.handle.link().get().execute();
+        let links = links
+            .try_collect::<Vec<_>>()
+            .await
+            .map_err(|e| e.to_string())?;
+        for link in links {
+            println!(
+                "{:?}",
+                link.attributes.iter().find_map(|e| {
+                    if let LinkAttribute::IfName(name) = e {
+                        Some(name)
+                    } else {
+                        None
+                    }
+                })
+            );
+        }
+        Ok(())
+    }
     pub async fn set_interface_up(&self, name: String) -> Result<(), String> {
         let request = self
             .handle
             .link()
-            .set(self.get_interface_index(name).await.unwrap())
+            .set(self.get_interface_index(name).await?)
             .up();
         request.execute().await.map_err(|e| e.to_string())
     }
@@ -79,7 +131,7 @@ impl RtnetlinkWrapper {
         let request = self
             .handle
             .link()
-            .set(self.get_interface_index(name).await.unwrap())
+            .set(self.get_interface_index(name).await?)
             .down();
         request.execute().await.map_err(|e| e.to_string())
     }
@@ -105,10 +157,9 @@ impl RtnetlinkWrapper {
     ) -> Result<(), String> {
         let request = self.handle.route().add().v4();
         request.execute().await.map_err(|e| e.to_string())
-
     }
 
-    pub async fn set_ns(&self, name: String, ns_fd:i32) -> Result<(), String> {
+    pub async fn set_ns(&self, name: String, ns_fd: i32) -> Result<(), String> {
         let request = self
             .handle
             .link()
