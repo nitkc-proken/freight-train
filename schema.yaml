@@ -48,6 +48,44 @@ paths:
                 - data
                 - ok
                 title: Success
+        "400":
+          description: Bad Request
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
       deprecated: false
   /api/auth/logout:
     post:
@@ -70,6 +108,44 @@ paths:
                 required:
                 - ok
                 title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "500":
+          description: Internal Server Error
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
       deprecated: false
       security:
       - AppDefaultSecurityScheme: []
@@ -290,6 +366,164 @@ paths:
       deprecated: false
       security:
       - AppDefaultSecurityScheme: []
+  /api/networks/{owner}/{name}/init:
+    post:
+      tags: []
+      parameters:
+      - name: owner
+        in: path
+        required: true
+        deprecated: false
+        explode: false
+        schema:
+          type: string
+          title: String
+      - name: name
+        in: path
+        required: true
+        deprecated: false
+        explode: false
+        schema:
+          type: string
+          title: String
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    type: "null"
+                    title: Unit
+                required:
+                - data
+                - ok
+                title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "404":
+          description: Not Found
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+  /api/networks/{owner}/{name}/clean:
+    post:
+      tags: []
+      parameters:
+      - name: owner
+        in: path
+        required: true
+        deprecated: false
+        explode: false
+        schema:
+          type: string
+          title: String
+      - name: name
+        in: path
+        required: true
+        deprecated: false
+        explode: false
+        schema:
+          type: string
+          title: String
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    type: "null"
+                    title: Unit
+                required:
+                - data
+                - ok
+                title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "404":
+          description: Not Found
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
   /api/users/me:
     get:
       tags: []
@@ -311,6 +545,158 @@ paths:
                 - data
                 - ok
                 title: Success
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+      deprecated: false
+      security:
+      - AppDefaultSecurityScheme: []
+  /api/containers/create:
+    post:
+      tags: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullNetworkName:
+                  type: string
+                  example: naotiki/my-nw1
+                  title: String
+              required:
+              - fullNetworkName
+              title: CreateContainerRequest
+        required: false
+      responses:
+        "200":
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  data:
+                    $ref: "#/components/schemas/Container"
+                required:
+                - data
+                - ok
+                title: Success
+        "201":
+          description: Created
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    title: Uuid
+                  containerId:
+                    type: string
+                    title: DockerId
+                  network:
+                    $ref: "#/components/schemas/Network"
+                  ipAddress:
+                    type: integer
+                    maximum: 4294967295
+                    minimum: 0
+                    title: IPv4Address
+                  hostVEthName:
+                    type:
+                    - "null"
+                    - string
+                    title: NetworkInterfaceName
+                  containerVEthName:
+                    type:
+                    - "null"
+                    - string
+                    title: NetworkInterfaceName
+                required:
+                - containerId
+                - id
+                - ipAddress
+                - network
+                title: Container
+        "401":
+          description: Unauthorized
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "400":
+          description: Bad Request
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
+        "500":
+          description: Internal Server Error
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                example: "{\"ok\":false,\"message\":\"Error Message\"}"
+                properties:
+                  ok:
+                    type: boolean
+                    title: Boolean
+                  message:
+                    type: string
+                    title: String
+                required:
+                - message
+                - ok
+                title: Error
       deprecated: false
       security:
       - AppDefaultSecurityScheme: []
@@ -388,7 +774,7 @@ components:
           type:
           - "null"
           - string
-          title: DockerId
+          title: DockerId#6781840936060560326
         tunInterfaceName:
           type:
           - "null"
@@ -424,12 +810,8 @@ components:
         username:
           type: string
           title: String
-        passwordHash:
-          type: string
-          title: Argon2
       required:
       - id
-      - passwordHash
       - username
       title: User
     NetworkMember:
@@ -464,6 +846,39 @@ components:
       - id
       - username
       title: UserResponse
+    Container:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Uuid
+        containerId:
+          type: string
+          title: DockerId
+        network:
+          $ref: "#/components/schemas/Network"
+        ipAddress:
+          type: integer
+          maximum: 4294967295
+          minimum: 0
+          title: IPv4Address
+        hostVEthName:
+          type:
+          - "null"
+          - string
+          title: NetworkInterfaceName
+        containerVEthName:
+          type:
+          - "null"
+          - string
+          title: NetworkInterfaceName
+      required:
+      - containerId
+      - id
+      - ipAddress
+      - network
+      title: Container
   examples: {}
   securitySchemes:
     AppDefaultSecurityScheme:
