@@ -46,7 +46,10 @@ impl Server for QuicServer {
                 let session_cloned = session.clone();
                 let err = handler
                     .handle_session(
-                        Box::new(recv), Box::new(send), session_cloned.session_data.clone())
+                        Box::new(recv),
+                        Box::new(send),
+                        session_cloned.session_data.clone(),
+                    )
                     .await;
                 if let Err(e) = err {
                     eprintln!("Error handling session: {}", e);

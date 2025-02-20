@@ -288,7 +288,7 @@ impl Gateway for GatewayService {
                 .add_route(
                     inner_request.client_network_address,
                     inner_request.subnet_mask as u8,
-                    inner_request.container_gateway_address
+                    inner_request.container_gateway_address,
                 )
                 .await
                 .map_err(|e| tonic::Status::internal(format!("Error adding route: {}", e)))?;

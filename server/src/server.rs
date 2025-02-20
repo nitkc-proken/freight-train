@@ -42,7 +42,6 @@ impl Default for SessionData {
     }
 }
 
-
 #[async_trait::async_trait]
 pub trait SessionHandler: Send + Sync {
     async fn add_session(&self, session: AppSession) -> Result<Arc<AppSession>, String>;

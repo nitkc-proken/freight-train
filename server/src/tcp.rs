@@ -32,16 +32,20 @@ impl Server for TcpServer {
 
             let session_handler = self.session_handler.clone();
             let session = self
-            .session_handler
-            .add_session(AppSession::new())
-            .await
-            .unwrap();
+                .session_handler
+                .add_session(AppSession::new())
+                .await
+                .unwrap();
             tokio::spawn(async move {
                 let session_cloned = session.clone();
                 let (read, write) = stream.into_split();
-                
+
                 if let Err(e) = session_handler
-                    .handle_session(Box::new(read), Box::new(write), session_cloned.session_data.clone())
+                    .handle_session(
+                        Box::new(read),
+                        Box::new(write),
+                        session_cloned.session_data.clone(),
+                    )
                     .await
                 {
                     eprintln!("Failed to handle client: {}", e);

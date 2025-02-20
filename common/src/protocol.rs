@@ -58,7 +58,7 @@ pub async fn expect_frame<T>(
     Ok(result)
 }
 
-pub struct TunnelCodec{
+pub struct TunnelCodec {
     length_delimited_codec: tokio_util::codec::LengthDelimitedCodec,
 }
 
@@ -68,7 +68,6 @@ impl TunnelCodec {
             length_delimited_codec: tokio_util::codec::LengthDelimitedCodec::new(),
         }
     }
-    
 }
 
 impl Encoder<Frame> for TunnelCodec {
@@ -76,8 +75,9 @@ impl Encoder<Frame> for TunnelCodec {
 
     fn encode(&mut self, item: Frame, dst: &mut BytesMut) -> Result<(), Self::Error> {
         let bytes = serde_cbor::to_vec(&item)?;
-        
-        self.length_delimited_codec.encode(Bytes::from(bytes), dst)?;
+
+        self.length_delimited_codec
+            .encode(Bytes::from(bytes), dst)?;
         Ok(())
     }
 }
