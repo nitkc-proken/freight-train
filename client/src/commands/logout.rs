@@ -1,6 +1,6 @@
 use super::{Args, Command};
-use crate::schema::api::LogoutResponse;
-use crate::Config;
+use crate::{api_client::get_api_config, Config};
+use openapi::apis::default_api::api_auth_logout_post;
 use reqwest::{header, Client};
 use std::process::exit;
 use url::Url;
@@ -29,44 +29,31 @@ impl Command for Logout {
     }
 }
 
-async fn logout(token: String, mut url: Url) -> LogoutResponse {
-    url.set_path(&format!(
-        "{}/api/auth/logout",
-        url.path().trim_end_matches('/')
-    ));
-    let response = Client::new()
-        .post(url)
-        .header(header::AUTHORIZATION, format!("Bearer {}", token))
-        .json(&{})
-        .send()
-        .await;
+async fn logout(token: String, url: Url) -> Option<Option<serde_json::Value>> {
+    let mut conf = get_api_config(url.as_str().to_string());
+    conf.bearer_access_token = Some(token);
+    let response = api_auth_logout_post(&conf).await;
     match response {
-        Ok(response) => {
-            let status = response.status();
-            if !status.is_success() {
-                eprintln!("Request error: status {}", status.as_u16());
-                exit(1);
-            }
-            println!("{}", status.is_success());
-            let response_body = response.json::<LogoutResponse>().await;
-            match response_body {
-                Ok(response_body) => {
-                    if response_body.ok {
-                        response_body
-                    } else {
-                        eprintln!("Error: {}", response_body.message.unwrap());
+        Ok(response) => response.data,
+        Err(e) => match e {
+            openapi::apis::Error::ResponseError(response_content) => {
+                match response_content.entity {
+                    Some(e) => match e {
+                        openapi::apis::default_api::ApiAuthLogoutPostError::UnknownValue(value) => {
+                            eprintln!("Error: {}", value);
+                            exit(1);
+                        }
+                    },
+                    None => {
+                        eprintln!("Invalid response {}", response_content.status);
                         exit(1);
                     }
                 }
-                Err(ref e) => {
-                    eprintln!("Invalid response: {}", e);
-                    exit(1);
-                }
             }
-        }
-        Err(e) => {
-            eprintln!("Request error: {}", e);
-            exit(1);
-        }
+            e => {
+                eprintln!("Request error: {}", e);
+                exit(1);
+            }
+        },
     }
 }

@@ -4,7 +4,7 @@ use config::Config;
 
 mod commands;
 mod config;
-mod schema;
+mod api_client;
 
 #[tokio::main]
 async fn main() {
