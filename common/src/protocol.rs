@@ -12,6 +12,7 @@ pub enum Frame {
     StateChanged(SessionState),
     Request(RequestBody),
     Response(ResponseBody),
+    /// IPv4 Packet
     #[serde(with = "serde_bytes")]
     IPv4(Vec<u8>),
 }
@@ -37,7 +38,12 @@ pub enum SessionState {
     Established,
     Closed,
 }
+
 type AppFramedRead = FramedRead<Box<dyn AsyncRead + Send + Unpin>, TunnelCodec>;
+
+/// Read a frame from `framed_read` and expect it to be matched `expected`.
+/// If the frame is matched, return the matched value.
+/// Otherwise, return an error.
 pub async fn expect_frame<T>(
     framed_read: &mut AppFramedRead,
     expected: fn(Frame) -> Option<T>,
