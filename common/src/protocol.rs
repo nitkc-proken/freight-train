@@ -6,7 +6,7 @@ use std::net::{IpAddr, SocketAddr};
 use tokio::io::AsyncRead;
 use tokio::net::UdpSocket;
 use tokio_stream::StreamExt;
-use tokio_util::bytes::{BufMut, BytesMut};
+use tokio_util::bytes::{BufMut, Bytes, BytesMut};
 use tokio_util::codec::{Decoder, Encoder, FramedRead};
 use tun::{Reader, Writer};
 
@@ -51,7 +51,7 @@ pub enum SessionState {
 }
 type AppFramedRead = FramedRead<Box<dyn AsyncRead + Send + Unpin>, TunnelCodec>;
 pub async fn expect_frame<T>(
-    mut framed_read: AppFramedRead,
+    framed_read: &mut AppFramedRead,
     expected: fn(Frame) -> Option<T>,
 ) -> Result<T, String> {
     let result = framed_read
@@ -64,14 +64,26 @@ pub async fn expect_frame<T>(
     Ok(result)
 }
 
-pub struct TunnelCodec;
+pub struct TunnelCodec{
+    length_delimited_codec: tokio_util::codec::LengthDelimitedCodec,
+}
+
+impl TunnelCodec {
+    pub fn new() -> Self {
+        Self {
+            length_delimited_codec: tokio_util::codec::LengthDelimitedCodec::new(),
+        }
+    }
+    
+}
 
 impl Encoder<Frame> for TunnelCodec {
     type Error = Box<dyn std::error::Error + Send + Sync>;
 
     fn encode(&mut self, item: Frame, dst: &mut BytesMut) -> Result<(), Self::Error> {
         let bytes = serde_cbor::to_vec(&item)?;
-        dst.put(bytes.as_slice());
+        
+        self.length_delimited_codec.encode(Bytes::from(bytes), dst)?;
         Ok(())
     }
 }
@@ -81,8 +93,11 @@ impl Decoder for TunnelCodec {
     type Error = Box<dyn std::error::Error + Send + Sync>;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        let item = serde_cbor::from_slice(&src)?;
-        Ok(item)
+        let result = self.length_delimited_codec.decode(src)?;
+        match result {
+            Some(data) => Ok(serde_cbor::from_slice(&data)?),
+            None => Ok(None),
+        }
     }
 }
 
@@ -91,7 +106,7 @@ pub enum Protocol {
     Quic,
 }
 
-pub const USING_PROTOCOL: Protocol = Protocol::Quic;
+pub const USING_PROTOCOL: Protocol = Protocol::Tcp;
 
 pub async fn tun_to_udp(tun: &mut Reader, udp: &UdpSocket, peer_addr: &Option<SocketAddr>) {
     let mut buffer = [0u8; 1500];
