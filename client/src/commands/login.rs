@@ -4,8 +4,7 @@ use crate::{
     config::{Config, ServerConfig},
 };
 use dialoguer::{Confirm, Input, Password};
-use reqwest::Client;
-use std::{ops::Deref, process::exit};
+use std::process::exit;
 use url::Url;
 
 #[derive(clap::Parser, Debug)]
@@ -73,7 +72,11 @@ impl Command for Login {
     }
 }
 
-async fn login(username: String, password: String, url: Url) -> openapi::models::UserWithTokenResponse{
+async fn login(
+    username: String,
+    password: String,
+    url: Url,
+) -> openapi::models::UserWithTokenResponse {
     let login_credential = openapi::models::LoginCredential { username, password };
     let conf = get_api_config(url.as_str().to_string());
 
@@ -84,8 +87,18 @@ async fn login(username: String, password: String, url: Url) -> openapi::models:
         Err(e) => match e {
             openapi::apis::Error::ResponseError(response_content) => {
                 match response_content.entity {
-                    Some((e)) => match e {
+                    Some(e) => match e {
                         openapi::apis::default_api::ApiAuthLoginPostError::UnknownValue(_value) => {
+                            eprintln!("Login Failed!");
+                            eprintln!("Unknown Error {:?}", _value);
+                            exit(1);
+                        }
+                        openapi::apis::default_api::ApiAuthLoginPostError::Status400(error) => {
+                            eprint!("Login Failed!");
+                            eprintln!("Bad Request: {:?}", error);
+                            exit(1);
+                        }
+                        openapi::apis::default_api::ApiAuthLoginPostError::Status401(_error) => {
                             eprintln!("Login Failed!");
                             eprintln!("Wrong username or password.");
                             eprintln!("Check your credentials.");

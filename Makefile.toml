@@ -1,4 +1,16 @@
-env_files = [".env.dev", ".env"]
+env_files = [{ path = ".env.example"}]
+# Load .env file if it exists
+env_scripts = ['''
+#!@duckscript
+if is_file .env
+    text = readfile .env
+    handle = map
+    map_load_properties ${handle} ${text}
+    set_env --handle ${handle}
+end
+''']
+
+
 [config]
 default_to_workspace = false
 
@@ -10,7 +22,7 @@ args = ["-o", "schema.yaml", "${BACKEND_REST_HOST}/api/schema.yaml"]
 [tasks.openapi-gen]
 description = "Generate Rust client from OpenAPI schema"
 command = "docker"
-windows.env = { "PWD" = {script = [ "cd" ]}}
+windows.env = { "PWD" = { script = ["cd"] } }
 linux.env = { "UID" = { script = [
     "id -u",
 ] }, "GID" = { script = [

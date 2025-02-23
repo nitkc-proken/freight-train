@@ -1,7 +1,6 @@
 use super::{Args, Command};
 use crate::{api_client::get_api_config, Config};
 use openapi::apis::default_api::api_auth_logout_post;
-use reqwest::{header, Client};
 use std::process::exit;
 use url::Url;
 
@@ -38,12 +37,10 @@ async fn logout(token: String, url: Url) -> Option<Option<serde_json::Value>> {
         Err(e) => match e {
             openapi::apis::Error::ResponseError(response_content) => {
                 match response_content.entity {
-                    Some(e) => match e {
-                        openapi::apis::default_api::ApiAuthLogoutPostError::UnknownValue(value) => {
-                            eprintln!("Error: {}", value);
-                            exit(1);
-                        }
-                    },
+                    Some(e) => {
+                        eprintln!("Error: {:?}", e);
+                        exit(1);
+                    }
                     None => {
                         eprintln!("Invalid response {}", response_content.status);
                         exit(1);
