@@ -2,9 +2,9 @@ use clap::Parser;
 use commands::Args;
 use config::Config;
 
+mod api_client;
 mod commands;
 mod config;
-mod api_client;
 
 #[tokio::main]
 async fn main() {
