@@ -5,6 +5,8 @@ use config::Config;
 mod api_client;
 mod commands;
 mod config;
+mod transport;
+mod nat;
 
 #[tokio::main]
 async fn main() {

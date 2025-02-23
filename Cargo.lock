@@ -390,17 +390,25 @@ checksum = "f46ad14479a25103f283c0f10005961cf086d8dc42205bb44c46ac563475dca6"
 name = "client"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "cidr",
  "clap",
  "common",
  "confy",
  "dialoguer",
+ "futures",
  "openapi",
+ "packet",
+ "quinn",
  "reqwest",
  "rpassword",
+ "rustls",
  "serde",
  "serde_json",
  "tokio",
+ "tokio-stream",
+ "tokio-util",
+ "tun",
  "url",
  "uuid",
 ]
