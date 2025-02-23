@@ -4,8 +4,7 @@ use crate::{
     config::{Config, ServerConfig},
 };
 use dialoguer::{Confirm, Input, Password};
-use reqwest::Client;
-use std::{ops::Deref, process::exit};
+use std::process::exit;
 use url::Url;
 
 #[derive(clap::Parser, Debug)]
@@ -88,7 +87,7 @@ async fn login(
         Err(e) => match e {
             openapi::apis::Error::ResponseError(response_content) => {
                 match response_content.entity {
-                    Some((e)) => match e {
+                    Some(e) => match e {
                         openapi::apis::default_api::ApiAuthLoginPostError::UnknownValue(_value) => {
                             eprintln!("Login Failed!");
                             eprintln!("Unknown Error {:?}", _value);
@@ -99,7 +98,7 @@ async fn login(
                             eprintln!("Bad Request: {:?}", error);
                             exit(1);
                         }
-                        openapi::apis::default_api::ApiAuthLoginPostError::Status401(error) => {
+                        openapi::apis::default_api::ApiAuthLoginPostError::Status401(_error) => {
                             eprintln!("Login Failed!");
                             eprintln!("Wrong username or password.");
                             eprintln!("Check your credentials.");

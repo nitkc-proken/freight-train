@@ -1,7 +1,6 @@
 use super::{Args, Command};
 use crate::{api_client::get_api_config, Config};
 use openapi::apis::default_api::api_auth_logout_post;
-use reqwest::{header, Client};
 use std::process::exit;
 use url::Url;
 

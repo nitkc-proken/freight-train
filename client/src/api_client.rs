@@ -1,5 +1,3 @@
-use std::sync::{LazyLock, Mutex};
-
 use openapi::apis::configuration::Configuration;
 
 pub fn get_api_config(basepath: String) -> Configuration {
