@@ -9,12 +9,10 @@ pub struct Tunnel {
     sub_command: TunnelSubCommands,
 }
 
-
 #[derive(clap::Subcommand, Debug)]
 pub enum TunnelSubCommands {
     Connect(Connect),
 }
-
 
 impl Command for Tunnel {
     async fn run(&self, _args: &Args) {

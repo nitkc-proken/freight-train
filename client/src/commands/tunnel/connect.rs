@@ -66,8 +66,8 @@ impl Command for Connect {
         })
         .data;
         dbg!(&network);
-        let network_cidr = Ipv4Cidr::from_str(&network.network_address_with_mask)
-            .unwrap_or_else(|e| {
+        let network_cidr =
+            Ipv4Cidr::from_str(&network.network_address_with_mask).unwrap_or_else(|e| {
                 eprintln!("Error parsing CIDR: {:?}", e);
                 exit(1);
             });
@@ -87,7 +87,8 @@ impl Command for Connect {
             self.bind_network_cidr,
             network_cidr,
         )
-        .await.unwrap();
+        .await
+        .unwrap();
     }
 }
 
