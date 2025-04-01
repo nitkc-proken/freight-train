@@ -23,6 +23,7 @@ pub struct GatewayService {
     rtnetlink: RtnetlinkWrapper,
     network_manager: Arc<Mutex<NetworkManager>>,
     sessions: Arc<Mutex<Vec<Arc<AppSession>>>>,
+    vrf_table_id_counter: Arc<Mutex<u32>>,
 }
 
 impl GatewayService {
@@ -34,6 +35,7 @@ impl GatewayService {
             rtnetlink: RtnetlinkWrapper::new(),
             network_manager,
             sessions,
+            vrf_table_id_counter: Arc::new(Mutex::new(1000)),
         }
     }
 }
@@ -89,13 +91,16 @@ impl Gateway for GatewayService {
         .map_err(|e| tonic::Status::internal(e.to_string()))?;
 
         // ip link add {vrf_interface_name} type vrf table {vrf_route_table_id}
-        self.rtnetlink
-            .add_vrf(
-                inner_request.vrf_interface_name.clone(),
-                inner_request.vrf_route_table_id,
-            )
-            .await
-            .map_err(|e| tonic::Status::internal(format!("Error Add VRF: {}", e)))?;
+        let vrf_table_id;
+        {
+            let mut id = self.vrf_table_id_counter.lock().await;
+            self.rtnetlink
+                .add_vrf(inner_request.vrf_interface_name.clone(), *id)
+                .await
+                .map_err(|e| tonic::Status::internal(format!("Error Add VRF: {}", e)))?;
+            vrf_table_id = *id;
+            *id += 1;
+        }
         // ip link set {vrf_interface_name} up
         self.rtnetlink
             .set_interface_up(inner_request.vrf_interface_name.clone())
@@ -209,7 +214,7 @@ impl Gateway for GatewayService {
             vrf_interface_name: inner_request.vrf_interface_name,
             bridge_interface_name: inner_request.bridge_interface_name,
             tun_interface_name: inner_request.tun_interface_name,
-            vrf_route_table_id: inner_request.vrf_route_table_id,
+            vrf_route_table_id: vrf_table_id,
         }))
     }
 
