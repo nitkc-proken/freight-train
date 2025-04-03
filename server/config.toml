@@ -1,0 +1,10 @@
+backend_grpc_url = "http://localhost:50051"
+
+[tunnel]
+host = "localhost"
+port = 8080
+protocol = "quic"
+
+[grpc]
+host = "localhost"
+port = 50051

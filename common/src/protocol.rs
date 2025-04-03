@@ -95,8 +95,11 @@ impl Decoder for TunnelCodec {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq,Clone)]
 pub enum Protocol {
+    #[serde(rename="tcp")]
     Tcp,
+    #[serde(rename="quic")]
     Quic,
 }
 

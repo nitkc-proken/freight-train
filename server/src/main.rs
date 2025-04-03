@@ -4,11 +4,13 @@ pub mod quic;
 pub mod rtlink;
 pub mod server;
 pub mod tcp;
+mod config;
 
 use common::protocol::{
     expect_frame, Frame, Protocol, RequestBody, ResponseBody, SessionState, TunnelCodec,
     USING_PROTOCOL,
 };
+use config::SERVER_CONFIG;
 use freight_proto::{
     backend_client::BackendClient, AuthenticationToken, StartTunnelingSessionRequest,
 };
@@ -81,13 +83,15 @@ pub async fn create_server(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let protocol = USING_PROTOCOL;
     let network_manager = Arc::new(Mutex::new(NetworkManager::new()));
     let network_manager_clone = network_manager.clone();
     let sessions: Arc<Mutex<Vec<Arc<AppSession>>>> = Arc::new(Mutex::new(vec![])); // Corrected type from AppSession to Vec<Arc<Mutex<AppSession>>>
+    println!("Starting server...");
+    println!("Server config: \n{:#?}", SERVER_CONFIG.clone());
+    let tunnel_config = SERVER_CONFIG.tunnel.clone();
     let server = create_server(
-        protocol,
-        "0.0.0.0:8080",
+        tunnel_config.protocol,
+        format!("{}:{}", tunnel_config.host, tunnel_config.port).as_str(),
         Box::new(AppSessionHandler {
             network_manager: network_manager.clone(),
             grpc_client: Arc::new(Mutex::new(get_backend_client().await)),

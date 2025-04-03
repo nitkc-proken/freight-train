@@ -1,19 +1,16 @@
 use crate::{
-    freight_proto::{
+    config::SERVER_CONFIG, freight_proto::{
         self,
         backend_client::BackendClient,
         gateway_server::{Gateway, GatewayServer},
-    },
-    rtlink::RtnetlinkWrapper,
-    server::AppSession,
-    Network, NetworkManager,
+    }, rtlink::RtnetlinkWrapper, server::AppSession, Network, NetworkManager
 };
 use common::protocol::Frame;
 use futures::StreamExt;
 use ipnet::{IpSub, Ipv4Net};
 use netns_rs::{get_from_current_thread, get_from_path};
 use packet::ip;
-use std::{mem, net::Ipv4Addr};
+use std::{mem, net::{IpAddr, Ipv4Addr}, str::FromStr};
 use std::{net::SocketAddr, os::fd::AsRawFd, sync::Arc};
 use tokio::sync::Mutex;
 use tonic::transport::Channel;
@@ -317,7 +314,10 @@ pub async fn create_grpc_server(
     network_manager: Arc<Mutex<NetworkManager>>,
     sessions: Arc<Mutex<Vec<Arc<AppSession>>>>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let grpc_addr = SocketAddr::from(([0, 0, 0, 0], 5051));
+    let grpc_addr = SocketAddr::new(
+            IpAddr::from_str(&SERVER_CONFIG.grpc.host)?,
+            SERVER_CONFIG.grpc.port,
+    );
     let gateway_service = GatewayService::new(network_manager, sessions);
     tonic::transport::Server::builder()
         .add_service(GatewayServer::new(gateway_service))
@@ -328,7 +328,8 @@ pub async fn create_grpc_server(
 }
 
 pub async fn get_backend_client() -> BackendClient<Channel> {
-    BackendClient::connect("http://192.168.2.4:5051")
+    let backend_grpc_url = SERVER_CONFIG.backend_grpc_url.clone();
+    BackendClient::connect(backend_grpc_url)
         .await
         .unwrap()
 }

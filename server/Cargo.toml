@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 common = { path = "../common" }
 tokio = { version = "1.43.0", features = ["full"] }
-tokio-util = {version = "0.7.13", features = ["io-util"]}
+tokio-util = { version = "0.7.13", features = ["io-util"] }
 tokio-stream = "0.1.17"
 
 tonic = "0.12.3"
@@ -17,7 +17,10 @@ packet = { version = "0.1.4" }
 async-trait = "0.1.84"
 
 quinn = "0.11"
-rustls = { version = "0.23.20",default-features = false,features = ["logging","std",] }
+rustls = { version = "0.23.20", default-features = false, features = [
+    "logging",
+    "std",
+] }
 rcgen = "0.13.2"
 netns-rs = "0.1.0"
 rtnetlink = "0.14.1"
@@ -25,7 +28,13 @@ netlink-packet-route = "0.19.0"
 futures = "0.3.31"
 
 ulid = "1.1.4"
-tun = {version = "0.7.10",features = ["async"]}
+tun = { version = "0.7.10", features = ["async"] }
 ipnet = "2.11.0"
+serde = "1.0.219"
+serde_derive = "1.0.219"
+url = { version = "2.5.4", features = ["serde"] }
+config = "0.15.11"
+garde = { version = "0.22.0", features = ["full"] }
+toml = "0.8.20"
 [build-dependencies]
 tonic-build = "0.12.3"
