@@ -11,13 +11,15 @@ pub struct ServerConfig {
     pub tunnel: TunnelServiceConfig,
     #[garde(dive)]
     pub grpc: GrpcServiceConfig,
+    #[garde(url, prefix("sqlite://"))]
+    pub sqlite_url: String,
     #[garde(url, pattern("^https?:\\/\\/.*$"))]
     pub backend_grpc_url: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Validate)]
 pub struct TunnelServiceConfig {
-    #[garde(length(min = 1),ip)]
+    #[garde(length(min = 1), ip)]
     pub host: String,
     #[garde(range(min = 1, max = 65535))]
     pub port: u16,
@@ -46,6 +48,7 @@ impl Default for ServerConfig {
                 port: 50051,
             },
             backend_grpc_url: "http://localhost:50051".to_owned(),
+            sqlite_url: "sqlite://db.sqlite?mode=rwc".to_owned(),
         }
     }
 }

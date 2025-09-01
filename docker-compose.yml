@@ -1,0 +1,7 @@
+services:
+  redis:
+    image: "valkey/valkey:8.1"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./data/redis:/data"

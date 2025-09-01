@@ -2,6 +2,7 @@
 ## cargo-make
 ```sh
 $ cargo install --force cargo-make
+$ cargo install sea-orm-cli
 ```
 
 https://github.com/sagiegurari/cargo-make?tab=readme-ov-file#installation

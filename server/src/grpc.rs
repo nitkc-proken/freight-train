@@ -3,7 +3,7 @@ use crate::{
         self,
         backend_client::BackendClient,
         gateway_server::{Gateway, GatewayServer},
-    }, rtlink::RtnetlinkWrapper, server::AppSession, Network, NetworkManager
+    }, rtlink::RtnetlinkWrapper, server::AppSession, server_state, Network, NetworkManager
 };
 use common::protocol::Frame;
 use futures::StreamExt;
@@ -21,18 +21,21 @@ pub struct GatewayService {
     network_manager: Arc<Mutex<NetworkManager>>,
     sessions: Arc<Mutex<Vec<Arc<AppSession>>>>,
     vrf_table_id_counter: Arc<Mutex<u32>>,
+    state: Arc<server_state::ServerState>,
 }
 
 impl GatewayService {
     pub fn new(
         network_manager: Arc<Mutex<NetworkManager>>,
         sessions: Arc<Mutex<Vec<Arc<AppSession>>>>,
+        server_state: Arc<server_state::ServerState>, // Updated to Arc<server_state::ServerState>
     ) -> Self {
         Self {
             rtnetlink: RtnetlinkWrapper::new(),
             network_manager,
             sessions,
             vrf_table_id_counter: Arc::new(Mutex::new(1000)),
+            state: server_state,
         }
     }
 }
@@ -313,12 +316,13 @@ impl Gateway for GatewayService {
 pub async fn create_grpc_server(
     network_manager: Arc<Mutex<NetworkManager>>,
     sessions: Arc<Mutex<Vec<Arc<AppSession>>>>,
+    server_state: Arc<server_state::ServerState>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let grpc_addr = SocketAddr::new(
             IpAddr::from_str(&SERVER_CONFIG.grpc.host)?,
             SERVER_CONFIG.grpc.port,
     );
-    let gateway_service = GatewayService::new(network_manager, sessions);
+    let gateway_service = GatewayService::new(network_manager, sessions, server_state);
     tonic::transport::Server::builder()
         .add_service(GatewayServer::new(gateway_service))
         .serve(grpc_addr)
